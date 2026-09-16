@@ -1,111 +1,151 @@
+---
 # =====================================================
 # CAN-to-Cloud Analytics Platform
-# CI Pipeline
-#
-# Trigger:
-#   - Runs on every push to main
-#   - Runs on Pull Requests
+# CI/CD Pipeline
 #
 # Purpose:
-#   1. Validate Python code
-#   2. Run tests
-#   3. Build Docker images
-#   4. Validate Kubernetes manifests
+#   1. Run unit tests
+#   2. Build Docker images
+#   3. Load images into Minikube
+#   4. Restart Kubernetes deployments
+#   5. Verify rollout success
+#
+# Runner:
+#   Self-hosted WSL + Minikube
 # =====================================================
 
-name: CI Pipeline
+name: CAN Platform CI-CD
 
-# Pipeline trigger conditions
 on:
 
-  # Execute when code is pushed to main branch
   push:
     branches:
       - main
 
-  # Execute during Pull Request validation
   pull_request:
     branches:
       - main
 
-
 jobs:
 
-  # =====================================================
-  # Job: Build and Test
-  # =====================================================
-  build-and-test:
+  build-test-deploy:
 
-    # GitHub-hosted Ubuntu runner
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
 
-      # -----------------------------------------------
-      # Checkout source code from repository
-      # -----------------------------------------------
+      # =====================================================
+      # Checkout source code
+      # =====================================================
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # -----------------------------------------------
-      # Install Python runtime
-      # -----------------------------------------------
+      # =====================================================
+      # Setup Python
+      # =====================================================
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      # -----------------------------------------------
-      # Install project dependencies
-      # -----------------------------------------------
+      # =====================================================
+      # Install dependencies
+      # =====================================================
       - name: Install Dependencies
         run: |
           pip install pytest
 
-      # -----------------------------------------------
-      # Run unit tests
-      # Pipeline will fail if any test fails
-      # -----------------------------------------------
+      # =====================================================
+      # Run Unit Tests
+      # =====================================================
       - name: Run Tests
         run: |
           pytest
 
-      # -----------------------------------------------
-      # Build CAN Dashboard image
-      # Verifies Dockerfile validity
-      # -----------------------------------------------
+      # =====================================================
+      # Verify Minikube
+      # =====================================================
+      - name: Check Minikube Status
+        run: |
+          minikube status
+
+      # =====================================================
+      # Verify Kubernetes Cluster
+      # =====================================================
+      - name: Verify Kubernetes Cluster
+        run: |
+          kubectl get nodes
+
+      # =====================================================
+      # Build Dashboard Image
+      # =====================================================
       - name: Build Dashboard Image
         run: |
-          docker build -t can-dashboard:test ./dashboard
+          docker build -t can-dashboard:v1 .
 
-      # -----------------------------------------------
-      # Build CAN Parser image
-      # -----------------------------------------------
+      # =====================================================
+      # Build Parser Image
+      # =====================================================
       - name: Build Parser Image
         run: |
-          docker build -t can-parser:test ./parser
+          docker build -t can-parser:v1 .
 
-      # -----------------------------------------------
-      # Build Vehicle Simulator image
-      # -----------------------------------------------
+      # =====================================================
+      # Build Simulator Image
+      # =====================================================
       - name: Build Simulator Image
         run: |
-          docker build -t vehicle-simulator:test ./simulator
+          docker build -t vehicle_data_simulator:v1 .
 
-      # -----------------------------------------------
-      # Install kubectl for YAML validation
-      # -----------------------------------------------
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-
-      # -----------------------------------------------
-      # Validate Kubernetes manifests only
-      # No resources are deployed
-      # -----------------------------------------------
-      - name: Install yamllint
+      # =====================================================
+      # Load Images into Minikube
+      # =====================================================
+      - name: Load Dashboard Image
         run: |
-          pip install yamllint
+          minikube image load can-dashboard:v1
 
-      - name: Validate YAML
+      - name: Load Parser Image
         run: |
-          yamllint deployment/
+          minikube image load can-parser:v1
+
+      - name: Load Simulator Image
+        run: |
+          minikube image load vehicle_data_simulator:v1
+
+      # =====================================================
+      # Restart Deployments
+      # =====================================================
+      - name: Restart Dashboard Deployment
+        run: |
+          kubectl rollout restart deployment can-dashboard
+
+      - name: Restart Parser Deployment
+        run: |
+          kubectl rollout restart deployment can-parser
+
+      - name: Restart Simulator Deployment
+        run: |
+          kubectl rollout restart deployment vehicle-data-simulator
+
+      # =====================================================
+      # Wait for Deployments
+      # =====================================================
+      - name: Wait for Rollout
+        run: |
+          kubectl rollout status deployment/can-dashboard
+          kubectl rollout status deployment/can-parser
+          kubectl rollout status deployment/vehicle-data-simulator
+
+      # =====================================================
+      # Verify Pods
+      # =====================================================
+      - name: Verify Pods
+        run: |
+          kubectl get pods
+
+      # =====================================================
+      # Verify Services
+      # =====================================================
+      - name: Verify Services
+        run: |
+          kubectl get svc
