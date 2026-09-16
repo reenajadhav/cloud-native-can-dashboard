@@ -1,0 +1,54 @@
+---
+name: Platform Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  platform:
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Minikube
+        run: |
+          minikube status
+
+      - name: Create Monitoring Namespace
+        run: |
+          kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install Prometheus Stack
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+
+          helm upgrade --install prometheus \
+            prometheus-community/kube-prometheus-stack \
+            --namespace monitoring
+
+      - name: Create PVC
+        run: |
+          kubectl apply -f deployment/pvc_parser.yaml
+
+      - name: Deploy Redis
+        run: |
+          kubectl apply -f deployment/redis_deployment.yaml
+          kubectl apply -f deployment/redis_service.yaml
+
+      - name: Apply ServiceMonitors
+        run: |
+          kubectl apply -f deployment/parser_servicemonitor.yaml
+          kubectl apply -f deployment/vehicle_simulator_servicemonitor.yaml
+
+      - name: Verify Platform
+        run: |
+          kubectl get pods -n monitoring
+          kubectl get pvc
+          kubectl get svc
+

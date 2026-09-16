@@ -1,0 +1,72 @@
+---
+name: Application CI-CD
+
+on:
+
+  push:
+    branches:
+      - main
+
+jobs:
+
+  application:
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install pytest
+
+      - name: Run Tests
+        run: |
+          pytest
+
+      - name: Build Dashboard Image
+        run: |
+          docker build -t can-dashboard:v1 ./dashboard
+
+      - name: Build Parser Image
+        run: |
+          docker build -t can-parser:v1 ./parser
+
+      - name: Build Simulator Image
+        run: |
+          docker build -t vehicle_data_simulator:v1 ./simulator
+
+      - name: Load Images
+        run: |
+          minikube image load can-dashboard:v1
+          minikube image load can-parser:v1
+          minikube image load vehicle_data_simulator:v1
+
+      - name: Apply Deployments
+        run: |
+          kubectl apply -f deployment/dashboard_deployment.yaml
+          kubectl apply -f deployment/dashboard_service.yaml
+
+          kubectl apply -f deployment/parser_deployment.yaml
+          kubectl apply -f deployment/parser_service.yaml
+
+          kubectl apply -f deployment/vehicle_simulator_deployment.yaml
+          kubectl apply -f deployment/vehicle_simulator_service.yaml
+
+      - name: Wait for Rollout
+        run: |
+          kubectl rollout status deployment/can-dashboard
+          kubectl rollout status deployment/can-parser
+          kubectl rollout status deployment/vehicle-data-simulator
+
+      - name: Verify Pods
+        run: |
+          kubectl get pods
+
