@@ -18,19 +18,19 @@ spec:
 
     spec:
       containers:
-      - name: vehicle-data-simulator
-        image: vehicle_data_simulator:v1
-        imagePullPolicy: Never
+        - name: vehicle-data-simulator
+          image: vehicle_data_simulator:v1
+          imagePullPolicy: Never
 
-        ports:
-          - name: metrics
-            containerPort: 8000
+          ports:
+            - name: metrics
+              containerPort: 8000
 
-        volumeMounts:
-        - name: can-data
-          mountPath: /shared
+          volumeMounts:
+            - name: can-data
+              mountPath: /shared
 
       volumes:
-      - name: can-data
-        persistentVolumeClaim:
-          claimName: can-pvc
+        - name: can-data
+          persistentVolumeClaim:
+            claimName: can-pvc
