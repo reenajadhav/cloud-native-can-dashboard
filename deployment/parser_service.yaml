@@ -1,17 +1,13 @@
 ---
-# simulator-metrics-service.yaml
-
 apiVersion: v1
 kind: Service
 metadata:
   name: can-parser
   labels:
     app: can-parser
-
 spec:
   selector:
     app: can-parser
-
   ports:
     - name: metrics
       port: 8001

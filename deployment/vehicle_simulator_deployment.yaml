@@ -1,37 +1,28 @@
 ---
-# Dashboard Deployment
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: vehicle-data-simulator
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: vehicle-data-simulator
-
   template:
     metadata:
       labels:
         app: vehicle-data-simulator
-
     spec:
       containers:
         - name: vehicle-data-simulator
-          image: vehicle_data_simulator:v1
+          image: 'vehicle_data_simulator:v1'
           imagePullPolicy: Never
-
           ports:
             - name: metrics
               containerPort: 8000
-
           volumeMounts:
             - name: can-data
               mountPath: /shared
-
       volumes:
         - name: can-data
           persistentVolumeClaim:
