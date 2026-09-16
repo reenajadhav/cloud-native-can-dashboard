@@ -102,8 +102,10 @@ jobs:
       # Validate Kubernetes manifests only
       # No resources are deployed
       # -----------------------------------------------
-      - name: Validate Kubernetes YAML
+      - name: Install yamllint
         run: |
-          kubectl apply \
-            --dry-run=client \
-            -f deployment/
+          pip install yamllint
+
+      - name: Validate YAML
+        run: |
+          yamllint deployment/
