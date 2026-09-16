@@ -25,12 +25,19 @@ jobs:
 
       - name: Install Prometheus Stack
         run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
           helm repo update
 
-          helm upgrade --install prometheus \
-            prometheus-community/kube-prometheus-stack \
-            --namespace monitoring
+          for i in 1 2 3
+          do
+            helm upgrade --install prometheus \
+              prometheus-community/kube-prometheus-stack \
+              --namespace monitoring \
+              --create-namespace && break
+
+            echo "Retry $i ..."
+            sleep 20
+          done
 
       - name: Create PVC
         run: |
