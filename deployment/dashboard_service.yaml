@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: can-dashboard-svc
+
+spec:
+  selector:
+    app: can-dashboard
+
+  ports:
+  - port: 8501
+    targetPort: 8501
+
+  type: NodePort

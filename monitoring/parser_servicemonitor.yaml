@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: can-parser
+  namespace: monitoring
+  labels:
+    release: prometheus
+
+spec:
+  selector:
+    matchLabels:
+      app: can-parser
+
+  namespaceSelector:
+    matchNames:
+      - default
+
+  endpoints:
+    - port: metrics
+      interval: 15s

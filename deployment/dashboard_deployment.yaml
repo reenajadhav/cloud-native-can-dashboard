@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: can-dashboard
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: can-dashboard
+
+  template:
+    metadata:
+      labels:
+        app: can-dashboard
+
+    spec:
+      containers:
+      - name: dashboard
+        image: can-dashboard:v1
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8501
+
+        volumeMounts:
+        - name: can-data
+          mountPath: /shared
+
+      volumes:
+      - name: can-data
+        persistentVolumeClaim:
+          claimName: can-pvc

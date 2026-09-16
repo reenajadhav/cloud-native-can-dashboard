@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: can-parser
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: can-parser
+
+  template:
+    metadata:
+      labels:
+        app: can-parser
+
+    spec:
+      containers:
+      - name: can-parser
+        image: can-parser:v1
+        imagePullPolicy: Never
+
+        volumeMounts:
+        - name: can-data
+          mountPath: /shared
+
+      volumes:
+      - name: can-data
+        persistentVolumeClaim:
+          claimName: can-pvc
