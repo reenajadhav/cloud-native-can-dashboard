@@ -81,21 +81,21 @@ jobs:
       # =====================================================
       - name: Build Dashboard Image
         run: |
-          docker build -t can-dashboard:v1 .
+          docker build -t can-dashboard:v1 ./dashboard
 
       # =====================================================
       # Build Parser Image
       # =====================================================
       - name: Build Parser Image
         run: |
-          docker build -t can-parser:v1 .
+          docker build -t can-parser:v1 ./parser
 
       # =====================================================
       # Build Simulator Image
       # =====================================================
       - name: Build Simulator Image
         run: |
-          docker build -t vehicle_data_simulator:v1 .
+          docker build -t vehicle_data_simulator:v1 ./simulator
 
       # =====================================================
       # Load Images into Minikube
