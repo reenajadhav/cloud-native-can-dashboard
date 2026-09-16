@@ -1,0 +1,109 @@
+# =====================================================
+# CAN-to-Cloud Analytics Platform
+# CI Pipeline
+#
+# Trigger:
+#   - Runs on every push to main
+#   - Runs on Pull Requests
+#
+# Purpose:
+#   1. Validate Python code
+#   2. Run tests
+#   3. Build Docker images
+#   4. Validate Kubernetes manifests
+# =====================================================
+
+name: CI Pipeline
+
+# Pipeline trigger conditions
+on:
+
+  # Execute when code is pushed to main branch
+  push:
+    branches:
+      - main
+
+  # Execute during Pull Request validation
+  pull_request:
+    branches:
+      - main
+
+
+jobs:
+
+  # =====================================================
+  # Job: Build and Test
+  # =====================================================
+  build-and-test:
+
+    # GitHub-hosted Ubuntu runner
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # -----------------------------------------------
+      # Checkout source code from repository
+      # -----------------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------
+      # Install Python runtime
+      # -----------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # -----------------------------------------------
+      # Install project dependencies
+      # -----------------------------------------------
+      - name: Install Dependencies
+        run: |
+          pip install pytest
+
+      # -----------------------------------------------
+      # Run unit tests
+      # Pipeline will fail if any test fails
+      # -----------------------------------------------
+      - name: Run Tests
+        run: |
+          pytest
+
+      # -----------------------------------------------
+      # Build CAN Dashboard image
+      # Verifies Dockerfile validity
+      # -----------------------------------------------
+      - name: Build Dashboard Image
+        run: |
+          docker build -t can-dashboard:test ./dashboard
+
+      # -----------------------------------------------
+      # Build CAN Parser image
+      # -----------------------------------------------
+      - name: Build Parser Image
+        run: |
+          docker build -t can-parser:test ./parser
+
+      # -----------------------------------------------
+      # Build Vehicle Simulator image
+      # -----------------------------------------------
+      - name: Build Simulator Image
+        run: |
+          docker build -t vehicle-simulator:test ./simulator
+
+      # -----------------------------------------------
+      # Install kubectl for YAML validation
+      # -----------------------------------------------
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      # -----------------------------------------------
+      # Validate Kubernetes manifests only
+      # No resources are deployed
+      # -----------------------------------------------
+      - name: Validate Kubernetes YAML
+        run: |
+          kubectl apply \
+            --dry-run=client \
+            -f deployment/
