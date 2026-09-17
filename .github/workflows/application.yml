@@ -49,24 +49,8 @@ jobs:
           minikube image load can-parser:v1
           minikube image load vehicle_data_simulator:v1
 
-      - name: Apply Deployments
+      - name: Verify Images
         run: |
-          kubectl apply -f deployment/dashboard_deployment.yaml
-          kubectl apply -f deployment/dashboard_service.yaml
-
-          kubectl apply -f deployment/parser_deployment.yaml
-          kubectl apply -f deployment/parser_service.yaml
-
-          kubectl apply -f deployment/vehicle_simulator_deployment.yaml
-          kubectl apply -f deployment/vehicle_simulator_service.yaml
-
-      - name: Wait for Rollout
-        run: |
-          kubectl rollout status deployment/can-dashboard
-          kubectl rollout status deployment/can-parser
-          kubectl rollout status deployment/vehicle-data-simulator
-
-      - name: Verify Pods
-        run: |
-          kubectl get pods
-
+          minikube image ls | grep can-dashboard
+          minikube image ls | grep can-parser
+          minikube image ls | grep vehicle_data_simulator

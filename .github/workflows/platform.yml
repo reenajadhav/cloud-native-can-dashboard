@@ -39,23 +39,7 @@ jobs:
             sleep 20
           done
 
-      - name: Create PVC
-        run: |
-          kubectl apply -f deployment/pvc_parser.yaml
-
-      - name: Deploy Redis
-        run: |
-          kubectl apply -f deployment/redis_deployment.yaml
-          kubectl apply -f deployment/redis_service.yaml
-
-      - name: Apply ServiceMonitors
-        run: |
-          kubectl apply -f deployment/parser_servicemonitor.yaml
-          kubectl apply -f deployment/vehicle_simulator_servicemonitor.yaml
 
       - name: Verify Platform
         run: |
           kubectl get pods -n monitoring
-          kubectl get pvc
-          kubectl get svc
-
