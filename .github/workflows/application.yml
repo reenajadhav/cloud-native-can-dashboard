@@ -51,6 +51,11 @@ jobs:
           minikube image load can-parser:${{ env.BUILD_NUMBER }}
           minikube image load vehicle_data_simulator:${{ env.BUILD_NUMBER }}
 
+      - name: Clone GitOps Repository
+        run: |
+          cd ..
+          git clone https://github.com/reenajadhav/can-platform-gitops.git
+
       - name: Update GitOps Manifests
         run: |
 
