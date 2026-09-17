@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+env:
+  BUILD_NUMBER: ${{ github.run_number }}
 
 jobs:
 
@@ -14,7 +16,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
-
+    
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -33,21 +35,21 @@ jobs:
 
       - name: Build Dashboard Image
         run: |
-          docker build -t can-dashboard:v1 ./dashboard
+          docker build -t can-dashboard:${{ env.BUILD_NUMBER }} ./dashboard
 
       - name: Build Parser Image
         run: |
-          docker build -t can-parser:v1 ./parser
+          docker build -t can-parser:${{ env.BUILD_NUMBER }} ./parser
 
       - name: Build Simulator Image
         run: |
-          docker build -t vehicle_data_simulator:v1 ./simulator
+          docker build -t vehicle_data_simulator:${{ env.BUILD_NUMBER }} ./simulator
 
       - name: Load Images
         run: |
-          minikube image load can-dashboard:v1
-          minikube image load can-parser:v1
-          minikube image load vehicle_data_simulator:v1
+          minikube image load can-dashboard:${{ env.BUILD_NUMBER }}
+          minikube image load can-parser:${{ env.BUILD_NUMBER }}
+          minikube image load vehicle_data_simulator:${{ env.BUILD_NUMBER }}
 
       - name: Verify Images
         run: |
