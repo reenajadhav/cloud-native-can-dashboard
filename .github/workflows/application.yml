@@ -51,6 +51,35 @@ jobs:
           minikube image load can-parser:${{ env.BUILD_NUMBER }}
           minikube image load vehicle_data_simulator:${{ env.BUILD_NUMBER }}
 
+      - name: Update GitOps Manifests
+        run: |
+
+          cd ../can-platform-gitops
+
+          # Dashboard
+          sed -i \
+          "s|image: can-dashboard:.*|image: can-dashboard:${BUILD_NUMBER}|g" \
+          dashboard/dashboard_deployment.yaml
+
+          # Parser
+          sed -i \
+          "s|image: can-parser:.*|image: can-parser:${BUILD_NUMBER}|g" \
+          parser/parser_deployment.yaml
+
+          # Simulator
+          sed -i \
+          "s|image: vehicle_data_simulator:.*|image: vehicle_data_simulator:${BUILD_NUMBER}|g" \
+          simulator/vehicle_simulator_deployment.yaml
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@local"
+
+          git add .
+
+          git commit -m "Update application images to build ${BUILD_NUMBER}" || true
+
+          git push origin main
+
       - name: Verify Images
         run: |
           minikube image ls | grep can-dashboard
