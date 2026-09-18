@@ -62,23 +62,33 @@ jobs:
 
           # Dashboard
           sed -i \
-          "s|image: can-dashboard:.*|image: can-dashboard:${BUILD_NUMBER}|g" \
+          "s|can-dashboard:[0-9]*|can-dashboard:${BUILD_NUMBER}|g" \
           dashboard/dashboard_deployment.yaml
 
           # Parser
           sed -i \
-          "s|image: can-parser:.*|image: can-parser:${BUILD_NUMBER}|g" \
+          "s|can-parser:[0-9]*|can-parser:${BUILD_NUMBER}|g" \
           parser/parser_deployment.yaml
 
           # Simulator
           sed -i \
-          "s|image: vehicle_data_simulator:.*|image: vehicle_data_simulator:${BUILD_NUMBER}|g" \
+          "s|vehicle_data_simulator:[0-9]*|vehicle_data_simulator:${BUILD_NUMBER}|g" \
           simulator/vehicle_simulator_deployment.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
 
           git add .
+    
+          echo "Dashboard:"
+          grep image dashboard/dashboard_deployment.yaml
+
+          echo "Parser:"
+          grep image parser/parser_deployment.yaml
+
+          echo "Simulator:"
+          grep image simulator/vehicle_simulator_deployment.yaml
+`
 
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
 
