@@ -88,7 +88,6 @@ jobs:
 
           echo "Simulator:"
           grep image simulator/vehicle_simulator_deployment.yaml
-`
 
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
 
