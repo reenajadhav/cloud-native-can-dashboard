@@ -51,15 +51,14 @@ jobs:
           minikube image load can-parser:${{ env.BUILD_NUMBER }}
           minikube image load vehicle_data_simulator:${{ env.BUILD_NUMBER }}
 
-      - name: Clone GitOps Repository
+      - name: Configure Git Remote
         run: |
-          cd ..
-          git clone https://github.com/reenajadhav/can-platform-gitops.git
+          cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops
 
-      - name: Update GitOps Manifests
-        run: |
+          git remote set-url origin \
+          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops.git
 
-          cd ../can-platform-gitops
+          echo "Updating manifests for build ${BUILD_NUMBER}"
 
           # Dashboard
           sed -i \
@@ -76,15 +75,14 @@ jobs:
           "s|image: vehicle_data_simulator:.*|image: vehicle_data_simulator:${BUILD_NUMBER}|g" \
           simulator/vehicle_simulator_deployment.yaml
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@local"
+          git config user.name "can-platform-ci"
+          git config user.email "can-platform-ci@local"
 
           git add .
 
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
 
-          git push origin main
-
+          git push origin master
       - name: Verify Images
         run: |
           minikube image ls | grep can-dashboard
