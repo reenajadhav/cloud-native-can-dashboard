@@ -56,24 +56,24 @@ jobs:
           cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops
 
           git remote set-url origin \
-          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops.git
+          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
           echo "Updating manifests for build ${BUILD_NUMBER}"
 
           # Dashboard
           sed -i \
-          "s|can-dashboard:[0-9]*|can-dashboard:${BUILD_NUMBER}|g" \
-          dashboard/dashboard_deployment.yaml
+          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
+          applications/dashboard/value*.yaml
 
           # Parser
           sed -i \
-          "s|can-parser:[0-9]*|can-parser:${BUILD_NUMBER}|g" \
-          parser/parser_deployment.yaml
+          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
+          application/parser/values.yaml
 
           # Simulator
           sed -i \
-          "s|vehicle_data_simulator:[0-9]*|vehicle_data_simulator:${BUILD_NUMBER}|g" \
-          simulator/vehicle_simulator_deployment.yaml
+          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
+          application/simulator/values.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
@@ -81,13 +81,13 @@ jobs:
           git add .
     
           echo "Dashboard:"
-          grep image dashboard/dashboard_deployment.yaml
+          grep -A3 "image:" applications/dashboard/values.yaml
 
           echo "Parser:"
-          grep image parser/parser_deployment.yaml
+          grep -A3 "image:" applications/parser/values.yaml
 
           echo "Simulator:"
-          grep image simulator/vehicle_simulator_deployment.yaml
+          grep -A3 "image:" applications/vehicle-simulator/values.yaml
 
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
 
