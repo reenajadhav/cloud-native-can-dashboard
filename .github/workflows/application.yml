@@ -43,13 +43,13 @@ jobs:
 
       - name: Build Simulator Image
         run: |
-          docker build -t vehicle_data_simulator:${{ env.BUILD_NUMBER }} ./simulator
+          docker build -t vehicle-simulator:${{ env.BUILD_NUMBER }} ./simulator
 
       - name: Load Images
         run: |
           minikube image load can-dashboard:${{ env.BUILD_NUMBER }}
           minikube image load can-parser:${{ env.BUILD_NUMBER }}
-          minikube image load vehicle_data_simulator:${{ env.BUILD_NUMBER }}
+          minikube image load vehicle-simulator:${{ env.BUILD_NUMBER }}
 
       - name: Configure Git Remote
         run: |
@@ -96,4 +96,4 @@ jobs:
         run: |
           minikube image ls | grep can-dashboard
           minikube image ls | grep can-parser
-          minikube image ls | grep vehicle_data_simulator
+          minikube image ls | grep vehicle-simulator
