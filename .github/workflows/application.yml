@@ -61,19 +61,16 @@ jobs:
           echo "Updating manifests for build ${BUILD_NUMBER}"
 
           # Dashboard
-          sed -i \
-          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
-          applications/dashboard/value*.yaml
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/dashboard/values.yaml
 
           # Parser
-          sed -i \
-          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
-          application/parser/values.yaml
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/parser/values.yaml
 
-          # Simulator
-          sed -i \
-          "s/tag: \".*\"/tag: \"${BUILD_NUMBER}*"/" \
-          application/simulator/values.yaml
+          # Vehicle Simulator
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/vehicle-simulator/values.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
