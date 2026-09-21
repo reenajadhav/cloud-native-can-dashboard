@@ -80,14 +80,17 @@ jobs:
 
           git add .
     
-          echo "Dashboard:"
-          grep -A3 "image:" applications/dashboard/values.yaml
+          # Dashboard
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/dashboard/values.yaml
 
-          echo "Parser:"
-          grep -A3 "image:" applications/parser/values.yaml
+          # Parser
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/parser/values.yaml
 
-          echo "Simulator:"
-          grep -A3 "image:" applications/vehicle-simulator/values.yaml
+          # Vehicle Simulator
+          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
+          applications/vehicle-simulator/values.yaml
 
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
 
