@@ -62,35 +62,20 @@ jobs:
 
           # Dashboard
           sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/dashboard/values.yaml
+          applications/dashboard/values-dev.yaml
 
           # Parser
           sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/parser/values.yaml
+          applications/parser/values-dev.yaml
 
           # Vehicle Simulator
           sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/vehicle-simulator/values.yaml
+          applications/vehicle-simulator/values-dev.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
-
-          git add .
-    
-          # Dashboard
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/dashboard/values.yaml
-
-          # Parser
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/parser/values.yaml
-
-          # Vehicle Simulator
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/vehicle-simulator/values.yaml
-
+          git add .  
           git commit -m "Update application images to build ${BUILD_NUMBER}" || true
-
           git push origin master
       - name: Verify Images
         run: |
