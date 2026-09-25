@@ -68,25 +68,25 @@ jobs:
             git remote set-url origin \
             https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-            echo "Updating manifests for build ${env.BUILD_NUMBER}"
+            echo "Updating manifests for build ${BUILD_NUMBER}"
 
             # Dashboard
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/dashboard/values-dev.yaml
 
             # Parser
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/parser/values-dev.yaml
 
             # Vehicle Simulator
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-dev.yaml
 
             git config user.name "can-platform-ci"
             git config user.email "can-platform-ci@local"
             git status
             git add .  
-            git commit -m "Promote build ${env.BUILD_NUMBER} to DEV" || true
+            git commit -m "Promote build ${BUILD_NUMBER} to DEV" || true
             git push origin master
   
     deploy-qa:
@@ -101,25 +101,25 @@ jobs:
             git remote set-url origin \
             https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-            echo "Updating manifests for build ${env.BUILD_NUMBER}"
+            echo "Updating manifests for build ${BUILD_NUMBER}"
 
             # Dashboard
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/dashboard/values-qa.yaml
 
             # Parser
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/parser/values-qa.yaml
 
             # Vehicle Simulator
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-qa.yaml
 
             git config user.name "can-platform-ci"
             git config user.email "can-platform-ci@local"
             git status
             git add .  
-            git commit -m "Promote build ${env.BUILD_NUMBER} to QA" || true
+            git commit -m "Promote build ${BUILD_NUMBER} to QA" || true
             git push origin master
   
     deploy-prod:
@@ -134,25 +134,25 @@ jobs:
             git remote set-url origin \
             https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-            echo "Updating manifests for build ${env.BUILD_NUMBER}"
+            echo "Updating manifests for build ${BUILD_NUMBER}"
 
             # Dashboard
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/dashboard/values-prod.yaml
 
             # Parser
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/parser/values-prod.yaml
 
             # Vehicle Simulator
-            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-prod.yaml
 
             git config user.name "can-platform-ci"
             git config user.email "can-platform-ci@local"
             git status
             git add .  
-            git commit -m "Promote build ${env.BUILD_NUMBER} to PROD" || true
+            git commit -m "Promote build ${BUILD_NUMBER} to PROD" || true
             git push origin master
 
 
