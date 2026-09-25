@@ -19,34 +19,28 @@ jobs:
 
   rollback:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Update Tag
-
+      - name: Rollback prod Environment 
         run: |
+          cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
 
-          FILE=applications/dashboard/values-${{ inputs.environment }}.yaml
+          git pull origin master
 
-          sed -i \
-            "s|tag: \".*\"|tag: \"${{ inputs.rollback_tag }}\"|" \
-            $FILE
+          git remote set-url origin \
+          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-      - name: Commit Rollback
+          echo "Updating manifests for build ${input.rollback_tag}"
 
-        run: |
+          # Dashboard
+          sed -i "s|tag: \".*\"|tag: \"${input.rollback_tag}\"|" \
+          applications/dashboard/values-dev.yaml
 
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-          git add .
-
-          git commit -m \
-            "Rollback ${{ inputs.environment }} to tag ${{ inputs.rollback_tag }}" \
-            || true
-
-          git push
+          git config user.name "can-platform-ci"
+          git config user.email "can-platform-ci@local"
+          git status
+          git add .  
+          git commit -m "Promote build ${input.rollback_tag} to DEV" || true
+          git push origin master
+  
