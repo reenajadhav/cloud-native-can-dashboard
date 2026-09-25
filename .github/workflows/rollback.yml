@@ -1,0 +1,52 @@
+name: Rollback
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+
+      rollback_tag:
+        description: "Docker Tag"
+        required: true
+
+jobs:
+
+  rollback:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Update Tag
+
+        run: |
+
+          FILE=applications/dashboard/values-${{ inputs.environment }}.yaml
+
+          sed -i \
+            "s|tag: \".*\"|tag: \"${{ inputs.rollback_tag }}\"|" \
+            $FILE
+
+      - name: Commit Rollback
+
+        run: |
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add .
+
+          git commit -m \
+            "Rollback ${{ inputs.environment }} to tag ${{ inputs.rollback_tag }}" \
+            || true
+
+          git push
