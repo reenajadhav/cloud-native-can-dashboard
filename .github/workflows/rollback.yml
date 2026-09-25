@@ -31,16 +31,16 @@ jobs:
           git remote set-url origin \
           https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-          echo "Updating manifests for build ${input.rollback_tag}"
+          echo "Updating manifests for build ${{input.rollback_tag}}"
 
           # Dashboard
-          sed -i "s|tag: \".*\"|tag: \"${input.rollback_tag}\"|" \
+          sed -i "s|tag: \".*\"|tag: \"${{input.rollback_tag}}\"|" \
           applications/dashboard/values-dev.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
           git status
           git add .  
-          git commit -m "Promote build ${input.rollback_tag} to DEV" || true
+          git commit -m "Promote build ${{input.rollback_tag}} to DEV" || true
           git push origin master
   
