@@ -35,7 +35,7 @@ jobs:
 
           # Dashboard
           sed -i "s|tag: \".*\"|tag: \"${{ inputs.rollback_tag }}\"|" \
-          applications/dashboard/values-dev.yaml
+          applications/dashboard/values-prod.yaml
 
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
