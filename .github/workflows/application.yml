@@ -10,75 +10,149 @@ env:
   BUILD_NUMBER: ${{ github.run_number }}
 
 jobs:
+    build:
+      runs-on: self-hosted
+      steps:
+      
+        - name: Checkout Repository
+          uses: actions/checkout@v4
 
-  application:
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: "3.12"
 
-    runs-on: self-hosted
+        - name: Install Dependencies
+          run: |
+            pip install pytest
 
-    steps:
+        - name: Run Tests
+          run: |
+            pytest
+
+        - name: Build Dashboard Image
+          run: |
+            docker build -t can-dashboard:${{ env.BUILD_NUMBER }} ./dashboard
+
+        - name: Build Parser Image
+          run: |
+            docker build -t can-parser:${{ env.BUILD_NUMBER }} ./parser
+
+        - name: Build Simulator Image
+          run: |
+            docker build -t vehicle-simulator:${{ env.BUILD_NUMBER }} ./simulator
+
+        - name: Load Images
+          run: |
+            minikube image load can-dashboard:${{ env.BUILD_NUMBER }}
+            minikube image load can-parser:${{ env.BUILD_NUMBER }}
+            minikube image load vehicle-simulator:${{ env.BUILD_NUMBER }}
+
+        - name: Verify Images
+          run: |
+            minikube image ls | grep can-dashboard
+            minikube image ls | grep can-parser
+            minikube image ls | grep vehicle-simulator
     
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    deploy-dev:
+      needs: build
+      runs-on: self-hosted
+      environment : dev
+      steps:
+        - name: Update DEV Tags
+          run: |
+            cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+            git pull origin master
 
-      - name: Install Dependencies
-        run: |
-          pip install pytest
+            git remote set-url origin \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-      - name: Run Tests
-        run: |
-          pytest
+            echo "Updating manifests for build ${env.BUILD_NUMBER}"
 
-      - name: Build Dashboard Image
-        run: |
-          docker build -t can-dashboard:${{ env.BUILD_NUMBER }} ./dashboard
+            # Dashboard
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/dashboard/values-dev.yaml
 
-      - name: Build Parser Image
-        run: |
-          docker build -t can-parser:${{ env.BUILD_NUMBER }} ./parser
+            # Parser
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/parser/values-dev.yaml
 
-      - name: Build Simulator Image
-        run: |
-          docker build -t vehicle-simulator:${{ env.BUILD_NUMBER }} ./simulator
+            # Vehicle Simulator
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/vehicle-simulator/values-dev.yaml
 
-      - name: Load Images
-        run: |
-          minikube image load can-dashboard:${{ env.BUILD_NUMBER }}
-          minikube image load can-parser:${{ env.BUILD_NUMBER }}
-          minikube image load vehicle-simulator:${{ env.BUILD_NUMBER }}
+            git config user.name "can-platform-ci"
+            git config user.email "can-platform-ci@local"
+            git status
+            git add .  
+            git commit -m "Promote build ${env.BUILD_NUMBER} to DEV" || true
+            git push origin master
+  
+    deploy-qa:
+      needs : deploy-dev
+      runs-on: self-hosted
+      environment : qa
+      steps:
+        - name: Update QA Tags
+          run: |
+            cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+            git pull origin master
+            git remote set-url origin \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-      - name: Configure Git Remote
-        run: |
-          cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+            echo "Updating manifests for build ${env.BUILD_NUMBER}"
 
-          git remote set-url origin \
-          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
+            # Dashboard
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/dashboard/values-qa.yaml
 
-          echo "Updating manifests for build ${BUILD_NUMBER}"
+            # Parser
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/parser/values-qa.yaml
 
-          # Dashboard
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/dashboard/values-dev.yaml
+            # Vehicle Simulator
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/vehicle-simulator/values-qa.yaml
 
-          # Parser
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/parser/values-dev.yaml
+            git config user.name "can-platform-ci"
+            git config user.email "can-platform-ci@local"
+            git status
+            git add .  
+            git commit -m "Promote build ${env.BUILD_NUMBER} to QA" || true
+            git push origin master
+  
+    deploy-prod:
+      needs : deploy-qa
+      runs-on: self-hosted
+      environment : prod
+      steps:
+        - name: Update PROD Tags
+          run: |
+            cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+            git pull origin master
+            git remote set-url origin \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
 
-          # Vehicle Simulator
-          sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
-          applications/vehicle-simulator/values-dev.yaml
+            echo "Updating manifests for build ${env.BUILD_NUMBER}"
 
-          git config user.name "can-platform-ci"
-          git config user.email "can-platform-ci@local"
-          git add .  
-          git commit -m "Update application images to build ${BUILD_NUMBER}" || true
-          git push origin master
-      - name: Verify Images
-        run: |
-          minikube image ls | grep can-dashboard
-          minikube image ls | grep can-parser
-          minikube image ls | grep vehicle-simulator
+            # Dashboard
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/dashboard/values-prod.yaml
+
+            # Parser
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/parser/values-prod.yaml
+
+            # Vehicle Simulator
+            sed -i "s|tag: \".*\"|tag: \"${env.BUILD_NUMBER}\"|" \
+            applications/vehicle-simulator/values-prod.yaml
+
+            git config user.name "can-platform-ci"
+            git config user.email "can-platform-ci@local"
+            git status
+            git add .  
+            git commit -m "Promote build ${env.BUILD_NUMBER} to PROD" || true
+            git push origin master
+
+
