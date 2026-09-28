@@ -85,5 +85,5 @@ def write_raw_canlog_to_table():
             print("set:", data)
             timestamp = time.time()+ 0.01
 
-        time.sleep(60)
+        time.sleep(1)
         redis_set.set("last_timestamp", time.time())
