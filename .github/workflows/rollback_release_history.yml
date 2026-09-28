@@ -1,0 +1,54 @@
+name: Rollback-Release
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Environment"
+        required: true
+        type: choice
+        options:
+          - prod
+ 
+      rollback_release_number:
+        description: "Docker Tag"
+        required: true
+        type: string
+       
+ 
+jobs:
+ 
+  rollback:
+ 
+    runs-on: self-hosted
+ 
+    steps:
+      - name: Rollback prod Environment
+        run: |
+          cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+ 
+          git pull origin master
+ 
+          git remote set-url origin \
+          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
+ 
+          echo "Updating manifests for build ${{ inputs.rollback_release_number }}"
+         
+          RELEASE_FILE="releases/${{ inputs.rollback_release_number }}.yaml"
+          Release_TAG=$(grep "tag:" $RELEASE_FILE | head -1 | awk '{print $2}' | tr -d '"')
+ 
+          # Dashboard
+          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
+          applications/dashboard/values-prod.yaml
+          # parser
+          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
+          applications/parser/values-prod.yaml
+          # simulator
+          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
+          applications/vehicle-simulator/values-prod.yaml
+ 
+          git config user.name "can-platform-ci"
+          git config user.email "can-platform-ci@local"
+          git status
+          git add .  
+          git commit -m "Rollback build ${{ inputs.rollback_release_number }} to DEV" || true
+          git push origin master

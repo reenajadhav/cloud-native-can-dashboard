@@ -81,13 +81,31 @@ jobs:
             sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-dev.yaml
 
+        - name: Create Release Manifest
+          run: |
+            cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+            git pull origin master
+            git remote set-url origin \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
+ 
+            mkdir -p releases
+            cat > releases/${BUILD_NUMBER}.yaml <<EOF
+            release: ${BUILD_NUMBER}
+            dashboard:
+              tag: "${BUILD_NUMBER}"
+            parser:
+              tag: "${BUILD_NUMBER}"
+            simulator:
+              tag: "${BUILD_NUMBER}"
+            EOF
+            
             git config user.name "can-platform-ci"
             git config user.email "can-platform-ci@local"
             git status
             git add .  
             git commit -m "Promote build ${BUILD_NUMBER} to DEV" || true
             git push origin master
-  
+        
     deploy-qa:
       needs : deploy-dev
       runs-on: self-hosted
@@ -146,6 +164,24 @@ jobs:
             # Vehicle Simulator
             sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-prod.yaml
+
+        - name: Create Release Manifest
+          run: |
+            cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
+            git pull origin master
+            git remote set-url origin \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
+
+            mkdir -p releases
+            cat > releases/${BUILD_NUMBER}.yaml <<EOF
+            release: ${BUILD_NUMBER}
+            dashboard:
+              tag: "${BUILD_NUMBER}"
+            parser:
+              tag: "${BUILD_NUMBER}"
+            simulator:
+              tag: "${BUILD_NUMBER}"
+            EOF
 
             git config user.name "can-platform-ci"
             git config user.email "can-platform-ci@local"

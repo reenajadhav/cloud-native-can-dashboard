@@ -1,5 +1,7 @@
 import streamlit as st
 import subprocess
+import socket
+
 
 st.set_page_config(
     page_title="CAN Platform Operations",
@@ -38,8 +40,14 @@ with st.container(border=True):
 with st.container(border=True):
     st.subheader("📈 Prometheus")
 
-    if st.button("Start Prometheus"):
-        subprocess.check_output([
+    try:
+        requests.get(
+            "http://localhost:9090/-/healthy",
+            timeout=2
+        )
+        print("Prometheus already running")
+    except:
+        subprocess.Popen([
             "kubectl",
             "port-forward",
             "-n",
@@ -56,23 +64,33 @@ with st.container(border=True):
 # -----------------------------------------------------
 # ArgoCD
 # -----------------------------------------------------
+def is_port_open(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) == 0
 with st.container(border=True):
-    st.subheader("🚀 ArgoCD")
-
+    st.subheader("📈 ArgoCD")
     if st.button("Start ArgoCD"):
-        subprocess.check_output([
-            "kubectl",
-            "port-forward",
-            "-n",
-            "argocd",
-            "svc/argocd-server",
-            "8080:443"
-        ])
+        if not is_port_open(8080):
+            subprocess.Popen(
+                [
+                    "kubectl",
+                    "port-forward",
+                    "-n",
+                    "argocd",
+                    "svc/argocd-server",
+                    "8080:443"
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            st.success("ArgoCD started")
+        else:
+            st.info("ArgoCD already running")
 
-    st.link_button(
-        "Open ArgoCD",
-        "https://localhost:8080"
-    )
+        st.link_button(
+            "Open ArgoCD",
+            "https://localhost:8080"
+        )
 
 # -----------------------------------------------------
 # Vehicle Dashboard
