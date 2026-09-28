@@ -1,54 +1,118 @@
 name: Rollback-Release
+
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Target Environment"
-        required: true
-        type: choice
-        options:
-          - prod
- 
       rollback_release_number:
-        description: "Docker Tag"
+        description: "Release number to restore, for example 27"
         required: true
         type: string
-       
- 
+
 jobs:
- 
   rollback:
- 
+    name: Rollback production
     runs-on: self-hosted
- 
+
     steps:
-      - name: Rollback prod Environment
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: reenajadhav/can-platform-gitops-helm
+          ref: master
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: can-platform-gitops-helm
+          fetch-depth: 0
+
+      - name: Update production image tags
+        working-directory: can-platform-gitops-helm
+        shell: bash
         run: |
-          cd /home/reenajadhav/canlog-dashboard-live/can-platform-gitops-helm
- 
-          git pull origin master
- 
-          git remote set-url origin \
-          https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/reenajadhav/can-platform-gitops-helm.git
- 
-          echo "Updating manifests for build ${{ inputs.rollback_release_number }}"
-         
-          RELEASE_FILE="releases/${{ inputs.rollback_release_number }}.yaml"
-          Release_TAG=$(grep "tag:" $RELEASE_FILE | head -1 | awk '{print $2}' | tr -d '"')
- 
-          # Dashboard
-          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
-          applications/dashboard/values-prod.yaml
-          # parser
-          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
-          applications/parser/values-prod.yaml
-          # simulator
-          sed -i "s|tag: \".*\"|tag: \"${{ Release_TAG }}\"|" \
-          applications/vehicle-simulator/values-prod.yaml
- 
+          set -euo pipefail
+
+          RELEASE_NUMBER="${{ inputs.rollback_release_number }}"
+          RELEASE_FILE="releases/${RELEASE_NUMBER}.yaml"
+
+          if [[ ! -f "${RELEASE_FILE}" ]]; then
+            echo "ERROR: Release file not found: ${RELEASE_FILE}"
+            exit 1
+          fi
+
+          RELEASE_TAG="$(
+            awk '/^[[:space:]]*tag:/ {
+              gsub(/"/, "", $2)
+              print $2
+              exit
+            }' "${RELEASE_FILE}"
+          )"
+
+          if [[ -z "${RELEASE_TAG}" ]]; then
+            echo "ERROR: No image tag found in ${RELEASE_FILE}"
+            exit 1
+          fi
+
+          if [[ ! "${RELEASE_TAG}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "ERROR: Invalid image tag: ${RELEASE_TAG}"
+            exit 1
+          fi
+
+          echo "Rolling back production to image tag ${RELEASE_TAG}"
+
+          sed -i \
+            "s|^[[:space:]]*tag: \".*\"|  tag: \"${RELEASE_TAG}\"|" \
+            applications/dashboard/values-prod.yaml
+
+          sed -i \
+            "s|^[[:space:]]*tag: \".*\"|  tag: \"${RELEASE_TAG}\"|" \
+            applications/parser/values-prod.yaml
+
+          sed -i \
+            "s|^[[:space:]]*tag: \".*\"|  tag: \"${RELEASE_TAG}\"|" \
+            applications/vehicle-simulator/values-prod.yaml
+
+          echo "Updated production values:"
+          grep -H "tag:" \
+            applications/dashboard/values-prod.yaml \
+            applications/parser/values-prod.yaml \
+            applications/vehicle-simulator/values-prod.yaml
+
+      - name: Validate Helm rendering
+        working-directory: can-platform-gitops-helm
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          helm template dashboard-prod applications/dashboard \
+            -f applications/dashboard/values-prod.yaml >/dev/null
+
+          helm template parser-prod applications/parser \
+            -f applications/parser/values-prod.yaml >/dev/null
+
+          helm template vehicle-simulator-prod applications/vehicle-simulator \
+            -f applications/vehicle-simulator/values-prod.yaml >/dev/null
+
+          echo "Helm validation completed successfully."
+
+      - name: Commit and push rollback
+        working-directory: can-platform-gitops-helm
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE_NUMBER="${{ inputs.rollback_release_number }}"
+
           git config user.name "can-platform-ci"
           git config user.email "can-platform-ci@local"
-          git status
-          git add .  
-          git commit -m "Rollback build ${{ inputs.rollback_release_number }} to DEV" || true
-          git push origin master
+
+          git add \
+            applications/dashboard/values-prod.yaml \
+            applications/parser/values-prod.yaml \
+            applications/vehicle-simulator/values-prod.yaml
+
+          if git diff --cached --quiet; then
+            echo "No changes required. Production already uses the selected release."
+            exit 0
+          fi
+
+          git diff --cached
+          git commit -m "Rollback production to release ${RELEASE_NUMBER}"
+          git push origin HEAD:master
