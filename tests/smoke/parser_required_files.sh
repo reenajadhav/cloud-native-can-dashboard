@@ -1,3 +1,3 @@
 docker run --rm \
-  can-parser:${ env.BUILD_NUMBER } \
+  can-parser:${BUILD_NUMBER} \
   find /app

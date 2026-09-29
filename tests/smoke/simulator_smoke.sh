@@ -3,7 +3,7 @@ set -e
 
 docker run -d \
   --name simulator-smoke \
-  vehicle-simulator:${ env.BUILD_NUMBER }
+  vehicle-simulator:${BUILD_NUMBER}
 
 sleep 15
 
