@@ -1,7 +1,7 @@
 docker run -d \
   --name dashboard-smoke \
   -p 8501:8501 \
-  can-dashboard:${TAG}
+  can-dashboard:${ env.BUILD_NUMBER }
 
 sleep 20
 

@@ -1,5 +1,5 @@
 docker run --rm \
-  can-parser:${TAG} \
+  can-parser:${ env.BUILD_NUMBER } \
   python -c "
 from decoders.decoder_1F0 import decode
 from decoders.decoder_120 import decode

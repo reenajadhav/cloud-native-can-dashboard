@@ -1,3 +1,3 @@
 docker run --rm \
-  can-parser:${TAG} \
+  can-parser:${ env.BUILD_NUMBER } \
   python -m compileall /app

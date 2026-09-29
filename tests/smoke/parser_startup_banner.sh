@@ -1,5 +1,5 @@
 docker run --rm \
-  can-parser:${TAG} \
+  can-parser:${ env.BUILD_NUMBER } \
   timeout 20 python main.py
 
 docker logs parser-smoke | grep "Starting CAN Parser"

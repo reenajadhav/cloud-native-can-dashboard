@@ -1,6 +1,6 @@
 docker run -d \
   --name simulator-smoke \
-  vehicle-simulator:${TAG}
+  vehicle-simulator:${ env.BUILD_NUMBER }
 
 sleep 10
 
