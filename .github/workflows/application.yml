@@ -29,6 +29,11 @@ jobs:
           run: |
             pytest
 
+        # unit test for application
+        - name: Run Unit Tests
+          run: |
+            pytest tests/
+
         - name: Build Dashboard Image
           run: |
             docker build -t can-dashboard:${{ env.BUILD_NUMBER }} ./dashboard
@@ -52,7 +57,12 @@ jobs:
             minikube image ls | grep can-dashboard
             minikube image ls | grep can-parser
             minikube image ls | grep vehicle-simulator
-    
+
+        - name: Run Smoke Tests
+          run: |
+            chmod +x tests/smoke/*.sh
+            ./tests/smoke/run_all_smoke_tests.sh  
+
     deploy-dev:
       needs: build
       runs-on: self-hosted
@@ -80,6 +90,8 @@ jobs:
             # Vehicle Simulator
             sed -i "s|tag: \".*\"|tag: \"${BUILD_NUMBER}\"|" \
             applications/vehicle-simulator/values-dev.yaml
+
+
 
         - name: Create Release Manifest
           run: |
