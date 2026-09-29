@@ -34,7 +34,7 @@ if not DECODED_DB.exists():
 @st.cache_data(ttl=2)
 def load_data():
 
-    conn = sqlite3.connect(DECODED_DB, timeout=30)
+    conn = sqlite3.connect(DECODED_DB, timeout=60)
 
     query = """
     SELECT
