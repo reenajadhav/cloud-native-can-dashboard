@@ -29,9 +29,14 @@ jobs:
           RELEASE_FILE="releases/${RELEASE_NUMBER}.yaml"
 
           # Extract component-specific tags
-          DASHBOARD_TAG=$(yq -r '.dashboard.tag' "${RELEASE_FILE}")
-          PARSER_TAG=$(yq -r '.parser.tag' "${RELEASE_FILE}")
-          SIMULATOR_TAG=$(yq -r '.simulator.tag' "${RELEASE_FILE}")
+          DASHBOARD_TAG=$(grep -A1 "^dashboard:" "${RELEASE_FILE}" | grep "tag:" | awk -F'"' '{print $2}')
+          PARSER_TAG=$(grep -A1 "^parser:" "${RELEASE_FILE}" | grep "tag:" | awk -F'"' '{print $2}')
+          SIMULATOR_TAG=$(grep -A1 "^simulator:" "${RELEASE_FILE}" | grep "tag:" | awk -F'"' '{print $2}')
+
+          echo "Dashboard tag : ${DASHBOARD_TAG}"
+          echo "Parser tag    : ${PARSER_TAG}"
+          echo "Simulator tag : ${SIMULATOR_TAG}"
+
           # Dashboard
           sed -i "s|tag: \".*\"|tag: \"${DASHBOARD_TAG}\"|" \
           applications/dashboard/values-prod.yaml
