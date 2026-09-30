@@ -1,6 +1,7 @@
 import time
 from vehicle_data_simulator import write_raw_canlog_to_table
 def canlog_to_parser():
+    print(f"Publishing CAN frames")
     write_raw_canlog_to_table()
 
 # -----------------------------------------------------
@@ -9,4 +10,3 @@ def canlog_to_parser():
 
 if __name__ == "__main__":
     canlog_to_parser()
-

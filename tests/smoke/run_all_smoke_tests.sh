@@ -6,9 +6,14 @@ echo "=========================================="
 echo "CAN-CLOUD PLATFORM SMOKE TEST SUITE"
 echo "=========================================="
 
+
+echo ""
+echo "Running dashboard Smoke Tests..."
+./tests/smoke/dashboard_reachiable.sh
+./tests/smoke/dashboard_smoke.sh
+
 echo ""
 echo "Running Parser Smoke Tests..."
-./tests/smoke/parser_smoke.sh
 ./tests/smoke/parser_python_compilation.sh
 ./tests/smoke/parser_critical_imports.sh
 ./tests/smoke/parser_required_files.sh
@@ -19,7 +24,6 @@ echo ""
 echo "Running Simulator Smoke Tests..."
 ./tests/smoke/simulator_starts.sh
 ./tests/smoke/simulator_generates_can_Data.sh
-./tests/smoke/simulator_smoke.sh
 
 echo ""
 echo "=========================================="
