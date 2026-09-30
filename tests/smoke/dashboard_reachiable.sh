@@ -8,7 +8,7 @@ docker rm -f dashboard-smoke >/dev/null 2>&1 || true
 
 docker run -d \
   --name dashboard-smoke \
-  -p 8501:8501 \
+  -p 8000:8000 \
   can-dashboard:${BUILD_NUMBER}
 
 sleep 20
