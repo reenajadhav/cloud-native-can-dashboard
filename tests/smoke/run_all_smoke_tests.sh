@@ -1,15 +1,13 @@
 #!/bin/bash
 
-set -e
-FAILED_TESTS = 0
+FAILED_TESTS=0
 
 echo "=========================================="
 echo "CAN-CLOUD PLATFORM SMOKE TEST SUITE"
 echo "=========================================="
 
-
 echo ""
-echo "Running dashboard Smoke Tests..."
+echo "Running Dashboard Smoke Tests..."
 ./tests/smoke/dashboard_reachiable.sh || ((FAILED_TESTS++))
 ./tests/smoke/dashboard_smoke.sh || ((FAILED_TESTS++))
 
@@ -27,14 +25,16 @@ echo "Running Simulator Smoke Tests..."
 ./tests/smoke/simulator_generates_can_Data.sh || ((FAILED_TESTS++))
 
 echo ""
-echo "=========================================="
-echo "ALL SMOKE TESTS PASSED"
-echo "=========================================="
+echo "Failed Tests: $FAILED_TESTS"
 
-if [ $FAILED_TESTS -eq 0 ]; then
-    echo "All smoke tests passed"
+if [ "$FAILED_TESTS" -eq 0 ]; then
+    echo "=========================================="
+    echo "ALL SMOKE TESTS PASSED"
+    echo "=========================================="
     exit 0
 else
-    echo "Smoke tests failed"
+    echo "=========================================="
+    echo "$FAILED_TESTS TEST(S) FAILED"
+    echo "=========================================="
     exit 1
 fi
