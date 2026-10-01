@@ -10,8 +10,8 @@ from prometheus_client import start_http_server
 
 import os
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = int(os.getenv("REDIS_PORT"))
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 
 frames_generated = Counter(
