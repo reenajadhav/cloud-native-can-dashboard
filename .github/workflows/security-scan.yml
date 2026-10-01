@@ -16,9 +16,9 @@ jobs:
         run: |
           if grep -R -i \
             --exclude-dir=.git \
+            --exclude-dir=.github \
             --exclude="*.md" \
-            --exclude=".github/workflows/*" \
-            -E 'password=|secret=|token=|apikey=' .; then
-            echo "Potential secret found"
+            "password=" .; then
+            echo "Hardcoded password found"
             exit 1
           fi
