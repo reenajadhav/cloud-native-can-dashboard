@@ -8,6 +8,12 @@ from prometheus_client import Counter
 from prometheus_client import start_http_server
 
 
+import os
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT"))
+ENVIRONMENT = os.getenv("ENVIRONMENT")
+
 frames_generated = Counter(
     'can_frames_generated_total',
     'Total CAN Frames Generated'
@@ -20,8 +26,8 @@ start_http_server(8000)
 # -----------------------------------------------------
 def connect_to_redis():
     redis_obj = redis.Redis(
-        host="redis",
-        port=6379,
+        host=REDIS_HOST,
+        port=REDIS_PORT,
         decode_responses=True
     )
     print(redis_obj.ping())

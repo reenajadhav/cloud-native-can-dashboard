@@ -8,6 +8,12 @@ from decoders.decoder_321 import decode as decoder_321
 
 from prometheus_client import Counter, Gauge, start_http_server, Gauge
 
+import os
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT"))
+ENVIRONMENT = os.getenv("ENVIRONMENT")
+
 # -----------------------------------------------------
 # Database Paths
 # -----------------------------------------------------
@@ -46,8 +52,8 @@ start_http_server(8001)
 # -----------------------------------------------------
 def connect_to_redis():
     redis_obj = redis.Redis(
-        host="redis",
-        port=6379,
+        host=REDIS_HOST,
+        port=REDIS_PORT,
         decode_responses=True
     )
     print(redis_obj.ping())
