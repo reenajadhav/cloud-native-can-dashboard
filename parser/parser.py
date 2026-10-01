@@ -13,11 +13,12 @@ import os
 REDIS_HOST = os.getenv("APP_REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("APP_REDIS_PORT", "6379"))
 ENVIRONMENT = os.getenv("ENVIRONMENT")
+DATABASE_PATH = os.getenv("DB-PATH")
 
 # -----------------------------------------------------
 # Database Paths
 # -----------------------------------------------------
-DECODED_DB = Path("/shared/decoded.db")
+DECODED_DB = Path(DATABASE_PATH)
 
 # -----------------------------------------------------
 # Decoder Map

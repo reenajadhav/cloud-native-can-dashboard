@@ -3,7 +3,9 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 from pathlib import Path
+import os
 
+DATABASE_PATH = os.getenv("DB-PATH")
 # -----------------------------------------------------
 # Page Configuration
 # -----------------------------------------------------
@@ -18,7 +20,7 @@ st.set_page_config(
 # Database
 # -----------------------------------------------------
 
-DECODED_DB = Path("/shared/decoded.db")
+DECODED_DB = Path("DATABASE_PATH")
 
 if not DECODED_DB.exists():
     st.error(
