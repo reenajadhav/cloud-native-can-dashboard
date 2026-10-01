@@ -1,9 +1,17 @@
-security-scan:
-  runs-on: self-hosted
+--- 
+name: security-scan
+on:
 
-  steps:
-    - uses: actions/checkout@v4
+  push:
+    branches:
+      - main
+jobs:
 
-    - name: Check for passwords
-      run: |
-        grep -R "password" . && exit 1 || true
+  platform:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for passwords
+        run: |
+          grep -R "password" . && exit 1 || true
