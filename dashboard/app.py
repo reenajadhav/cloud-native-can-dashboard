@@ -5,7 +5,7 @@ import plotly.express as px
 from pathlib import Path
 import os
 
-DATABASE_PATH = os.getenv("DB-PATH")
+DATABASE_PATH = os.getenv("DB-PATH", "/shared/decoded.db")
 # -----------------------------------------------------
 # Page Configuration
 # -----------------------------------------------------
