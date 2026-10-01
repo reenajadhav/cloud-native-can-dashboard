@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for passwords
+      - name: Check for hardcoded secrets
         run: |
-          grep -R "password" . && exit 1 || true
+          grep -R -E "(password=|passwd=|secret=|apikey=|token=)" . \
+            --exclude-dir=.git \
+            --exclude="*.md" \
+            && exit 1 || true
