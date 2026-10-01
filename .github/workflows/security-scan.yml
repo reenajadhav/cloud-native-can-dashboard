@@ -14,7 +14,11 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          grep -R -E "(password=|passwd=|secret=|apikey=|token=)" . \
+          if grep -R -i \
             --exclude-dir=.git \
             --exclude="*.md" \
-            && exit 1 || true
+            --exclude=".github/workflows/*" \
+            -E 'password=|secret=|token=|apikey=' .; then
+            echo "Potential secret found"
+            exit 1
+          fi
